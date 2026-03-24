@@ -1,8 +1,14 @@
 footer {
   margin-top: auto;
-  padding: 20px 32px;
-  text-align: center;
-  font-size: 14px;
-  color: var(--text);
+  background-color: var(--bg);
   border-top: 1px solid var(--border);
+  padding: 28px 40px;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+footer span {
+  color: var(--accent);
 }

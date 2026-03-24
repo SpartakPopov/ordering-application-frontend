@@ -1,24 +1,31 @@
 header {
+  position: sticky;
+  top: 0;
+  z-index: 997;
+  background-color: rgba(12, 11, 9, 0.95);
+  border-bottom: 1px solid var(--border);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 24px 32px 0;
+  justify-content: space-between;
+  padding: 10px 40px;
+  gap: 24px;
+  backdrop-filter: blur(6px);
 }
 
 header .logo {
-  width: 80px;
-  height: 80px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--accent);
-  margin-bottom: 20px;
+  border: 2px solid var(--accent);
+  flex-shrink: 0;
 }
 
 nav {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 4px;
+  gap: 0;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -32,23 +39,57 @@ nav ul {
 
 nav ul a {
   display: block;
-  padding: 8px 14px;
+  padding: 10px 15px;
   text-decoration: none;
-  color: var(--text);
+  color: #ffffff;
+  font-family: var(--nav);
   font-size: 14px;
-  letter-spacing: 0.5px;
-  border-radius: 20px;
-  transition: background 0.2s, color 0.2s;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  transition: color 0.3s;
+  white-space: nowrap;
 }
 
 nav ul a:hover {
-  background: var(--accent-bg);
   color: var(--accent);
 }
 
-header hr {
-  width: 100%;
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 20px 0 0;
+.btn-book {
+  flex-shrink: 0;
+  color: #ffffff;
+  border: 2px solid var(--accent);
+  background: transparent;
+  font-family: var(--nav);
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 6px 22px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+  white-space: nowrap;
+}
+
+.btn-book:hover {
+  background: var(--accent);
+  color: #0c0b09;
+}
+
+@media (max-width: 768px) {
+  header {
+    padding: 10px 20px;
+    flex-wrap: wrap;
+  }
+
+  nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  nav ul a {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
 }

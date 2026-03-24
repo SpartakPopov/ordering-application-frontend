@@ -12,9 +12,9 @@ function Header(){
                 <ul><a href="#">Viande</a></ul>
                 <ul><a href="#">Fromage</a></ul>
                 <ul><a href="#">Dessert</a></ul>
-                <ul><a href="#">Petit Fours & Café </a></ul>
+                <ul><a href="#">Petit Fours & Café</a></ul>
             </nav>
-            <hr />
+            <button className="btn-book">Book a Table</button>
         </header>
     )
 }
