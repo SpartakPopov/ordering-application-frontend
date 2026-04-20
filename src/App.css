@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Layout ── */
+.app {
+  min-height: 100vh;
+  background: #0a0a0b;
+  color: #e8e8e8;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Loading ── */
+.loading-screen {
+  min-height: 100vh;
+  background: #0a0a0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #2a2a2d;
+  border-top-color: #e8c87e;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.loading-text {
+  font-family: 'DM Sans', sans-serif;
+  color: #6b6b70;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ── Error ── */
+.error-screen {
+  min-height: 100vh;
+  background: #0a0a0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-content {
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  color: #e8e8e8;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #c4463a;
+}
+
+.error-content h2 {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.error-content p {
+  color: #6b6b70;
+  font-size: 14px;
+  max-width: 300px;
+}
+
+.retry-btn {
+  margin-top: 20px;
+  padding: 10px 28px;
+  background: transparent;
+  border: 1px solid #2a2a2d;
+  color: #e8c87e;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── Header ── */
+.site-header {
+  padding: 48px 0 32px;
+  text-align: center;
+  border-bottom: 1px solid #1a1a1d;
+}
+
+.site-header .eyebrow {
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #e8c87e;
+  margin-bottom: 12px;
+  font-weight: 400;
+}
+
+.site-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 44px;
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -0.5px;
+  color: #e8e8e8;
+}
+
+.site-header .item-count {
+  color: #6b6b70;
+  font-size: 14px;
+  margin-top: 10px;
+  font-weight: 300;
+}
+
+/* ── Category nav ── */
+.category-nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 20px;
+  background: transparent;
+  color: #6b6b70;
+  border: 1px solid #2a2a2d;
+  border-radius: 100px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.filter-btn.active {
+  background: #e8c87e;
+  color: #0a0a0b;
+  border-color: transparent;
+}
+
+/* ── Menu grid ── */
+.menu-main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 24px 60px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 0;
+  color: #6b6b70;
+  font-size: 16px;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* ── Menu card ── */
+.menu-card {
+  background: #121214;
+  border-radius: 10px;
+  padding: 24px;
+  border: 1px solid #1e1e22;
+  transition: border-color 0.25s ease, transform 0.2s ease;
+  cursor: default;
+  animation: fadeUp 0.4s ease both;
+}
+
+.menu-card:hover {
+  border-color: #e8c87e40;
+  transform: translateY(-2px);
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.card-category {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #e8c87e;
+  font-weight: 400;
+}
+
+.card-id {
+  font-size: 11px;
+  color: #4a4a4e;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  margin: 0 0 16px;
+  line-height: 1.2;
+  color: #e8e8e8;
+}
+
+.card-footer {
+  border-top: 1px solid #1e1e22;
+  padding-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-price {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  color: #e8e8e8;
+}
+
+.card-available {
+  font-size: 11px;
+  color: #3d8c5c;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── Footer ── */
+.site-footer {
+  text-align: center;
+  padding: 32px 0;
+  border-top: 1px solid #1a1a1d;
+  color: #3a3a3e;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
