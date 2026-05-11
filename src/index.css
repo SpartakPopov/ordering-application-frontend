@@ -1,20 +1,5 @@
 :root {
-  --bg:           #0c0b09;
-  --surface:      #29261f;
-  --surface-2:    #464135;
-  --text:         rgba(255, 255, 255, 0.7);
-  --text-h:       #ffffff;
-  --accent:       #cda45e;
-  --accent-dim:   rgba(205, 164, 94, 0.2);
-  --border:       rgba(205, 164, 94, 0.2);
-
-  --sans:    'Roboto', system-ui, sans-serif;
-  --heading: 'Playfair Display', serif;
-  --nav:     'Poppins', sans-serif;
-
-  font: 16px/1.6 var(--sans);
-  color: var(--text);
-  background-color: var(--bg);
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
 }
@@ -25,7 +10,7 @@
 
 body {
   margin: 0;
-  background-color: var(--bg);
+  background: #000;
 }
 
 #root {

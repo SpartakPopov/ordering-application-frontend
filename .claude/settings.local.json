@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:themewagon.github.io)"
+      "WebFetch(domain:themewagon.github.io)",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm run *)"
     ]
   }
 }
