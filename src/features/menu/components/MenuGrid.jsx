@@ -1,9 +1,14 @@
 import { MenuCard } from './MenuCard';
 
-export function MenuGrid({ items, categories }) {
+export function MenuGrid({ items, categories, cart, onAdd }) {
   const getCategoryName = (categoryId) => {
     const cat = categories.find((c) => c.id === categoryId);
     return cat ? cat.name.toUpperCase() : '';
+  };
+
+  const getCartQuantity = (itemId) => {
+    const entry = cart.find((c) => c.menuItemId === itemId);
+    return entry ? entry.quantity : 0;
   };
 
   return (
@@ -26,6 +31,8 @@ export function MenuGrid({ items, categories }) {
               item={item}
               categoryName={getCategoryName(item.categoryId)}
               index={index}
+              onAdd={onAdd}
+              cartQuantity={getCartQuantity(item.id)}
             />
           ))}
         </div>

@@ -6,7 +6,10 @@
       "Bash(npm install *)",
       "Bash(npm test *)",
       "WebFetch(domain:github.com)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\spart\\\\Desktop\\\\my-react-app\" -Force)",
+      "Bash(Select-Object Name, FullName)",
+      "Bash(Test-Path \"c:\\\\Users\\\\spart\\\\Desktop\\\\my-react-app\\\\README.md\")"
     ]
   }
 }

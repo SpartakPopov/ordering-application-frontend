@@ -1,0 +1,282 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Jost:wght@300;400;500;600&display=swap');
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── Page ── */
+.kitchen-page {
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: 'Jost', sans-serif;
+}
+
+/* ── Header ── */
+.kitchen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 48px;
+  background: #000;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.kitchen-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.kitchen-brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: #c9a84c;
+  line-height: 1;
+}
+
+.kitchen-brand-sub {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #555;
+}
+
+/* ── Connection indicator ── */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #444;
+}
+
+.connection-status--live {
+  color: #4caf7d;
+}
+
+.connection-status--live .connection-dot {
+  background: #4caf7d;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Body ── */
+.kitchen-body {
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Section ── */
+.kitchen-section--completed {
+  opacity: 0.5;
+}
+
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 400;
+  color: #c9a84c;
+  margin: 0 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.section-title--completed {
+  color: #4caf7d;
+}
+
+.section-count {
+  background: #c9a84c;
+  color: #000;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 100px;
+}
+
+.section-count--completed {
+  background: #4caf7d;
+}
+
+/* ── Empty state ── */
+.kitchen-empty {
+  color: #444;
+  font-size: 15px;
+  font-style: italic;
+  padding: 40px 0;
+}
+
+/* ── Order grid ── */
+.order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* ── Order card ── */
+.order-card {
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.order-card--completed {
+  border-color: #1a1a1a;
+}
+
+.order-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.order-id {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.order-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+}
+
+.order-badge--pending {
+  background: #c9a84c22;
+  color: #c9a84c;
+  border: 1px solid #c9a84c44;
+}
+
+.order-badge--completed {
+  background: #4caf7d22;
+  color: #4caf7d;
+  border: 1px solid #4caf7d44;
+}
+
+/* ── Item list ── */
+.item-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.item-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #111;
+  transition: opacity 0.3s;
+}
+
+.item-row--done {
+  opacity: 0.4;
+}
+
+.item-row-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-name {
+  font-size: 15px;
+  color: #ddd;
+}
+
+.item-row--done .item-name {
+  text-decoration: line-through;
+  color: #555;
+}
+
+.item-subtotal {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  color: #777;
+  white-space: nowrap;
+}
+
+.item-row-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mark-done-btn {
+  padding: 7px 18px;
+  background: transparent;
+  border: 1px solid #c9a84c;
+  color: #c9a84c;
+  cursor: pointer;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mark-done-btn:hover {
+  background: #c9a84c;
+  color: #000;
+}
+
+.item-done-mark {
+  color: #4caf7d;
+  font-size: 16px;
+}
+
+/* ── Card footer ── */
+.order-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 20px;
+  border-top: 1px solid #1a1a1a;
+  margin-top: auto;
+}
+
+.order-total-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.order-total-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  color: #c9a84c;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .kitchen-header { padding: 16px 20px; }
+  .kitchen-body   { padding: 24px 20px; }
+  .kitchen-brand-name { font-size: 24px; }
+}

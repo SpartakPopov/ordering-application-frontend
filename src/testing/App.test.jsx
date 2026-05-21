@@ -13,6 +13,7 @@ const mockCategories = [
   { id: 2, name: 'Bread' },
 ];
 
+//resets mocks before tests
 beforeEach(() => {
   vi.restoreAllMocks();
 });
@@ -31,12 +32,17 @@ function getCategoryNav() {
   return screen.getByRole('navigation');
 }
 
+
+
 describe('App', () => {
   it('shows loading state initially', () => {
     mockFetch();
     render(<App />);
     expect(screen.getByText(/loading menu/i)).toBeInTheDocument();
   });
+
+
+
 
   it('renders menu items after loading', async () => {
     mockFetch();
@@ -45,6 +51,9 @@ describe('App', () => {
     expect(screen.getByText('Baguette')).toBeInTheDocument();
   });
 
+
+
+
   it('renders category filter buttons', async () => {
     mockFetch();
     render(<App />);
@@ -52,6 +61,9 @@ describe('App', () => {
     expect(within(getCategoryNav()).getByText('BREAD')).toBeInTheDocument();
     expect(within(getCategoryNav()).getByText('ALL')).toBeInTheDocument();
   });
+
+
+
 
   it('filters items by category when a filter button is clicked', async () => {
     mockFetch();
@@ -63,6 +75,9 @@ describe('App', () => {
     expect(screen.getByText('Croissant')).toBeInTheDocument();
     expect(screen.queryByText('Baguette')).not.toBeInTheDocument();
   });
+
+
+
 
   it('shows all items when ALL is clicked after filtering', async () => {
     mockFetch();
@@ -76,11 +91,16 @@ describe('App', () => {
     expect(screen.getByText('Baguette')).toBeInTheDocument();
   });
 
+
+
   it('shows error message when fetch fails', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false });
     render(<App />);
     await waitFor(() => expect(screen.getByText(/connection failed/i)).toBeInTheDocument());
   });
+
+
+
 
   it('displays item prices', async () => {
     mockFetch();
@@ -89,6 +109,9 @@ describe('App', () => {
     expect(screen.getByText('€3')).toBeInTheDocument();
   });
 
+
+
+  
   it('shows empty state when no items exist', async () => {
     mockFetch([], mockCategories);
     render(<App />);
