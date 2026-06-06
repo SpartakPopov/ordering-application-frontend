@@ -7,39 +7,40 @@ export default function KitchenPage() {
   const [orders, setOrders] = useState([]);
   const [connected, setConnected] = useState(false);
 
-  
   const setOrdersRef = useRef(setOrders);
   setOrdersRef.current = setOrders;
 
+  function updateItemStatus(orderId, itemId, status) {
+    setOrdersRef.current((prev) =>
+      prev.map((order) => {
+        if (order.id !== orderId) return order;
+        return {
+          ...order,
+          items: order.items.map((item) =>
+            item.id === itemId ? { ...item, status } : item
+          ),
+        };
+      })
+    );
+  }
+
   function handleKitchenMessage(data) {
-    switch (data.type) {
+    switch (data.type) {  // checking the type of message received
       case 'NEW_ORDER':
-        setOrdersRef.current((prev) => [data.payload, ...prev]);
+        setOrdersRef.current((prev) => [...prev, data.payload]); // adds new order to the bottom of the list
+        break;
+
+      case 'ITEM_IN_PROGRESS':
+        updateItemStatus(data.payload.orderId, data.payload.item.id, 'IN_PROGRESS');
         break;
 
       case 'ITEM_DONE':
-        setOrdersRef.current((prev) =>
-          prev.map((order) => {
-            if (order.id !== data.payload.orderId) return order;
-            return {
-              ...order,
-              items: order.items.map((item) =>
-                item.id === data.payload.item.id
-                  ? { ...item, status: 'DONE' }
-                  : item
-              ),
-            };
-          })
-        );
+        updateItemStatus(data.payload.orderId, data.payload.item.id, 'DONE');
         break;
 
       case 'ORDER_COMPLETED':
         setOrdersRef.current((prev) =>
-          prev.map((order) =>
-            order.id === data.payload.orderId
-              ? { ...order, status: 'COMPLETED' }
-              : order
-          )
+          prev.filter((o) => o.id !== data.payload.orderId) // remove completed orders from the list
         );
         break;
     }
@@ -48,37 +49,64 @@ export default function KitchenPage() {
   useEffect(() => {
     fetch('/api/orders')
       .then((r) => r.json())
-      .then((data) => setOrders(data.sort((a, b) => b.id - a.id)))
+      .then((data) =>
+        setOrders(
+          data
+            .filter((o) => o.status !== 'COMPLETED')
+            .sort((a, b) => a.id - b.id)
+        )
+      )
       .catch(console.error);
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('/ws'),
-      onDisconnect: () => setConnected(false),
+      webSocketFactory: () => new SockJS('/ws'), // Tells STOMP to use SockJS instead of raw WebSocket
+      onDisconnect: () => setConnected(false),  // disables the "live" status dot in the UI
     });
 
     client.onConnect = () => {
-      setConnected(true);
-      client.subscribe('/topic/kitchen', (message) => {
-        handleKitchenMessage(JSON.parse(message.body));
+      setConnected(true);  //enables the "live" status dot in the UI
+      client.subscribe('/topic/kitchen', (message) => { // STOMP Subscribes to /topic/kitchen 
+                                                    // and all new orders are broadcasted here
+        handleKitchenMessage(JSON.parse(message.body)); 
       });
     };
 
-    client.activate();
-    return () => client.deactivate();
+    client.activate();  // Opens SockJS connection -> upgrades to STOMP -> triggers onConnect
+    return () => client.deactivate(); // Cleanup
   }, []);
+
+  async function startItem(orderId, itemId) {
+    try {
+      await fetch(`/api/orders/${orderId}/items/${itemId}/start`, { method: 'PATCH' });
+    } catch (err) {
+      console.error('Failed to start item', err);
+    }
+  }
 
   async function markItemDone(orderId, itemId) {
     try {
-      await fetch(`/api/orders/${orderId}/items/${itemId}/done`, {
-        method: 'PATCH',
-      });
+      await fetch(`/api/orders/${orderId}/items/${itemId}/done`, { method: 'PATCH' });
     } catch (err) {
       console.error('Failed to mark item done', err);
     }
   }
 
-  const activeOrders = orders.filter((o) => o.status === 'PENDING');
-  const completedOrders = orders.filter((o) => o.status === 'COMPLETED');
+  // Each column is driven purely by individual item status
+  const newTickets = orders
+    .flatMap((o) =>
+      o.items
+        .filter((item) => !item.status || item.status === 'PENDING')
+        .map((item) => ({ ...item, orderId: o.id }))
+    )
+    .sort((a, b) => a.id - b.id);
+
+  const progressTickets = orders
+    .flatMap((o) =>
+      o.items
+        .filter((item) => item.status === 'IN_PROGRESS')
+        .map((item) => ({ ...item, orderId: o.id }))
+    )
+    .sort((a, b) => a.id - b.id);
 
   return (
     <div className="kitchen-page">
@@ -93,97 +121,75 @@ export default function KitchenPage() {
         </div>
       </header>
 
-      <div className="kitchen-body">
-        <section className="kitchen-section">
-          <h2 className="section-title">
-            Active Orders
-            {activeOrders.length > 0 && (
-              <span className="section-count">{activeOrders.length}</span>
+      <div className="kitchen-board">
+        {/* ── LEFT: New Orders ── */}
+        <div className="kitchen-column">
+          <div className="column-header">
+            <h2 className="column-title column-title--new">New Orders</h2>
+            {newTickets.length > 0 && (
+              <span className="column-count column-count--new">{newTickets.length}</span>
             )}
-          </h2>
+          </div>
 
-          {activeOrders.length === 0 ? (
-            <div className="kitchen-empty">
-              <p>No active orders — standing by.</p>
-            </div>
+          {newTickets.length === 0 ? (
+            <p className="kitchen-empty">No new orders — standing by.</p>
           ) : (
-            <div className="order-grid">
-              {activeOrders.map((order) => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  onMarkDone={markItemDone}
+            <div className="ticket-list">
+              {newTickets.map((ticket) => (
+                <ItemTicket
+                  key={ticket.id}
+                  ticket={ticket}
+                  onStart={() => startItem(ticket.orderId, ticket.id)}
                 />
               ))}
             </div>
           )}
-        </section>
+        </div>
 
-        {completedOrders.length > 0 && (
-          <section className="kitchen-section kitchen-section--completed">
-            <h2 className="section-title section-title--completed">
-              Completed
-              <span className="section-count section-count--completed">
-                {completedOrders.length}
-              </span>
-            </h2>
-            <div className="order-grid">
-              {completedOrders.map((order) => (
-                <OrderCard key={order.id} order={order} onMarkDone={markItemDone} />
+        <div className="kitchen-divider" />
+
+        {/* ── RIGHT: In Progress ── */}
+        <div className="kitchen-column">
+          <div className="column-header">
+            <h2 className="column-title column-title--progress">In Progress</h2>
+            {progressTickets.length > 0 && (
+              <span className="column-count column-count--progress">{progressTickets.length}</span>
+            )}
+          </div>
+
+          {progressTickets.length === 0 ? (
+            <p className="kitchen-empty">Nothing cooking yet.</p>
+          ) : (
+            <div className="ticket-list">
+              {progressTickets.map((ticket) => (
+                <ItemTicket
+                  key={ticket.id}
+                  ticket={ticket}
+                  onDone={() => markItemDone(ticket.orderId, ticket.id)}
+                />
               ))}
             </div>
-          </section>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function OrderCard({ order, onMarkDone }) {
-  const isCompleted = order.status === 'COMPLETED';
-
+function ItemTicket({ ticket, onStart, onDone }) {
   return (
-    <div className={`order-card ${isCompleted ? 'order-card--completed' : ''}`}>
-      <div className="order-card-header">
-        <div className="order-id">Order #{order.id}</div>
-        <div className={`order-badge ${isCompleted ? 'order-badge--completed' : 'order-badge--pending'}`}>
-          {isCompleted ? 'Completed' : 'Pending'}
-        </div>
+    <div className="ticket">
+      <div className="ticket-body">
+        <span className="ticket-name">{ticket.menuItemName}</span>
+        <span className="ticket-qty">× {ticket.quantity}</span>
       </div>
-
-      <ul className="item-list">
-        {order.items.map((item) => {
-          const isDone = item.status === 'DONE';
-          return (
-            <li key={item.id} className={`item-row ${isDone ? 'item-row--done' : ''}`}>
-              <div className="item-row-info">
-                <span className="item-name">
-                  {item.menuItemName} × {item.quantity}
-                </span>
-                <span className="item-subtotal">€{item.subtotal?.toFixed(2)}</span>
-              </div>
-              <div className="item-row-action">
-                {isDone ? (
-                  <span className="item-done-mark">✓</span>
-                ) : (
-                  !isCompleted && (
-                    <button
-                      className="mark-done-btn"
-                      onClick={() => onMarkDone(order.id, item.id)}
-                    >
-                      Mark Done
-                    </button>
-                  )
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="order-card-footer">
-        <span className="order-total-label">Total</span>
-        <span className="order-total-price">€{order.totalPrice?.toFixed(2)}</span>
+      <div className="ticket-action">
+        {onStart && (
+          <button className="start-btn" onClick={onStart}>Start →</button>
+        )}
+        {onDone && (
+          <button className="mark-done-btn" onClick={onDone}>Done</button>
+        )}
       </div>
     </div>
   );

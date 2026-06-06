@@ -5,12 +5,21 @@ import './index.css';
 import App from './app/App';
 
 const KitchenPage = lazy(() => import('./pages/KitchenPage'));
+const AdminPage   = lazy(() => import('./pages/AdminPage'));
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route
+          path="/admin"
+          element={
+            <Suspense fallback={<div style={{ background: '#0a0a0a', minHeight: '100vh' }} />}>
+              <AdminPage />
+            </Suspense>
+          }
+        />
         <Route
           path="/kitchen"
           element={

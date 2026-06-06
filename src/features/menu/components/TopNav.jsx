@@ -22,7 +22,7 @@ export function TopNav() {
         <p className="brand-tagline">PARIS · DELIVERED</p>
       </div>
       <div className="top-nav-icons">
-        <button className="icon-btn" aria-label="Account"><UserIcon /></button>
+        <a href="/admin" className="icon-btn" aria-label="Account"><UserIcon /></a>
         <button className="icon-btn" aria-label="Cart"><CartIcon /></button>
       </div>
     </header>

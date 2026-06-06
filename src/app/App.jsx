@@ -61,16 +61,16 @@ export default function App() {
   }
 
   async function handlePlaceOrder() {
-    setIsSubmitting(true);
+    setIsSubmitting(true); // disables the place order button and sets it to "Placing"
     try {
-      const order = await placeOrder(cart);
-      setLastOrder(order);
-      setOrderStatus('success');
-      setCart([]);
+      const order = await placeOrder(cart); // calls the fetch function and waits for response
+      setLastOrder(order); // sets the order to be displayed
+      setOrderStatus('success');  // marks as success
+      setCart([]); // clears the cart
     } catch {
-      setOrderStatus('error');
+      setOrderStatus('error'); // something went wrong message
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // button is clickable again
     }
   }
 
