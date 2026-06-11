@@ -6,8 +6,8 @@ export function MenuCard({ item, categoryName, index, onAdd, cartQuantity }) {
     >
       <div className="card-image">
         {item.imageUrl
-          ? <img src={item.imageUrl} alt={item.name} />
-          : <div className="card-image-placeholder" />
+          ? <img src={item.imageUrl} alt={item.name} /> // browser fetches from Cloudinary CDN
+          : <div className="card-image-placeholder" /> // grey box if no image was uploaded
         }
         <span className="card-badge">{categoryName}</span>
         {cartQuantity > 0 && (

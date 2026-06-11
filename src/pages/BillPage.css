@@ -1,0 +1,173 @@
+.bill-page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.bill-card {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 520px;
+}
+
+.bill-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.bill-back-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.bill-back-btn:hover { color: #c9a04a; }
+
+.bill-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #c9a04a;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+.bill-empty {
+  color: #666;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.bill-orders {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.bill-order {
+  background: #1c1c1c;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.bill-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.bill-order-id {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #c9a04a;
+  letter-spacing: 0.04em;
+}
+
+.bill-order-total {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e8e0d0;
+}
+
+.bill-items {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.bill-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #aaa;
+}
+
+.bill-pay-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.6rem;
+  background: transparent;
+  border: 1px solid #c9a04a;
+  color: #c9a04a;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.bill-pay-btn:hover {
+  background: #c9a04a;
+  color: #000;
+}
+
+.bill-footer {
+  border-top: 1px solid #2a2a2a;
+  padding-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bill-grand-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e8e0d0;
+}
+
+.bill-pay-all-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background: #c9a04a;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bill-pay-all-btn:hover { background: #e0b85a; }
+
+.bill-reset-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  color: #666;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.bill-reset-btn:hover {
+  border-color: #c4463a;
+  color: #c4463a;
+}

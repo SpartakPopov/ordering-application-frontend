@@ -8,6 +8,7 @@ export function Cart({
   orderStatus,
   lastOrder,
   onDismiss,
+  onPayNow,
 }) {
   const total = cart.reduce((sum, item) => sum + item.menuItemPrice * item.quantity, 0);
   const isEmpty = cart.length === 0;
@@ -28,6 +29,9 @@ export function Cart({
           <p className="confirm-detail">
             #{lastOrder.id} · €{lastOrder.totalPrice?.toFixed(2)}
           </p>
+          <button className="pay-now-btn" onClick={onPayNow}>
+            Pay now
+          </button>
           <button className="dismiss-btn" onClick={onDismiss}>
             New order
           </button>

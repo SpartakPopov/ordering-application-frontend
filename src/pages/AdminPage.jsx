@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './AdminPage.css';
 
 const CLOUD_NAME    = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 export default function AdminPage() {
+  const { authHeader, logout } = useAuth();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [menuItems,  setMenuItems]  = useState([]);
   const [form, setForm] = useState({ name: '', price: '', categoryId: '', imageUrl: '' });
@@ -34,13 +38,13 @@ export default function AdminPage() {
   function handleFileChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-    setForm((f) => ({ ...f, imageUrl: '' }));
+    setImageFile(file); // store the file
+    setImagePreview(URL.createObjectURL(file)); // local blob URL for the preview thumbnail
+    setForm((f) => ({ ...f, imageUrl: '' })); // clear any previously typed URL
   }
 
   async function uploadToCloudinary() {
-    if (!imageFile) return form.imageUrl || null;
+    if (!imageFile) return form.imageUrl || null; //no file selected, return any existing URL or null
 
     if (!CLOUD_NAME || !UPLOAD_PRESET) {
       setFeedback({ type: 'error', msg: 'Cloudinary is not configured. Add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to your .env file.' });
@@ -50,8 +54,8 @@ export default function AdminPage() {
     setUploading(true);
     try {
       const data = new FormData();
-      data.append('file', imageFile);
-      data.append('upload_preset', UPLOAD_PRESET);
+      data.append('file', imageFile); // the raw image bytes
+      data.append('upload_preset', UPLOAD_PRESET); // tells Cloudinary which preset rules to apply
 
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
@@ -85,12 +89,12 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/menu', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
         body: JSON.stringify({
           name: form.name.trim(),
           price: parseFloat(form.price),
           categoryId: parseInt(form.categoryId),
-          imageUrl: imageUrl || null,
+          imageUrl: imageUrl || null,   // the Cloudinary URL
         }),
       });
 
@@ -113,7 +117,7 @@ export default function AdminPage() {
   async function handleDelete(id, name) {
     if (!window.confirm(`Remove "${name}" from the menu?`)) return;
     try {
-      const res = await fetch(`/api/menu/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/menu/${id}`, { method: 'DELETE', headers: authHeader() });
       if (!res.ok) throw new Error('Delete failed');
       setMenuItems((prev) => prev.filter((i) => i.id !== id));
       setFeedback({ type: 'success', msg: `"${name}" removed.` });
@@ -133,7 +137,16 @@ export default function AdminPage() {
           <span className="admin-brand-name">Le Château</span>
           <span className="admin-brand-sub">Manager Panel</span>
         </div>
-        <a href="/" className="admin-back">← Back to menu</a>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <a href="/" className="admin-back">← Back to menu</a>
+          <button
+            className="admin-back"
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            onClick={() => { logout(); navigate('/login'); }}
+          >
+            Log out
+          </button>
+        </div>
       </header>
 
       <div className="admin-body">

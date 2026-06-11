@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { useAuth } from '../context/AuthContext';
 import './KitchenPage.css';
 
 export default function KitchenPage() {
+  const { authHeader, logout } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [connected, setConnected] = useState(false);
 
@@ -77,7 +81,10 @@ export default function KitchenPage() {
 
   async function startItem(orderId, itemId) {
     try {
-      await fetch(`/api/orders/${orderId}/items/${itemId}/start`, { method: 'PATCH' });
+      await fetch(`/api/orders/${orderId}/items/${itemId}/start`, {
+        method: 'PATCH',
+        headers: authHeader(),
+      });
     } catch (err) {
       console.error('Failed to start item', err);
     }
@@ -85,7 +92,10 @@ export default function KitchenPage() {
 
   async function markItemDone(orderId, itemId) {
     try {
-      await fetch(`/api/orders/${orderId}/items/${itemId}/done`, { method: 'PATCH' });
+      await fetch(`/api/orders/${orderId}/items/${itemId}/done`, {
+        method: 'PATCH',
+        headers: authHeader(),
+      });
     } catch (err) {
       console.error('Failed to mark item done', err);
     }
@@ -115,9 +125,17 @@ export default function KitchenPage() {
           <span className="kitchen-brand-name">Le Château</span>
           <span className="kitchen-brand-sub">Kitchen Display</span>
         </div>
-        <div className={`connection-status ${connected ? 'connection-status--live' : ''}`}>
-          <span className="connection-dot" />
-          {connected ? 'Live' : 'Disconnected'}
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+          <div className={`connection-status ${connected ? 'connection-status--live' : ''}`}>
+            <span className="connection-dot" />
+            {connected ? 'Live' : 'Disconnected'}
+          </div>
+          <button
+            onClick={() => { logout(); navigate('/login'); }}
+            style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem' }}
+          >
+            Log out
+          </button>
         </div>
       </header>
 

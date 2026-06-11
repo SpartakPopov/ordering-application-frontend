@@ -145,6 +145,27 @@
   opacity: 0.7;
 }
 
+.icon-btn--badge {
+  position: relative;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #c9a04a;
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
 /* ── Category Nav ── */
 .category-nav {
   display: flex;
@@ -613,8 +634,29 @@
   margin: 0 0 16px;
 }
 
-.dismiss-btn {
+.pay-now-btn {
   margin-top: 16px;
+  padding: 9px 28px;
+  background: #c9a84c;
+  color: #000;
+  border: 1px solid #c9a84c;
+  cursor: pointer;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.pay-now-btn:hover {
+  background: #e0b85a;
+  border-color: #e0b85a;
+}
+
+.dismiss-btn {
+  margin-top: 8px;
   padding: 9px 28px;
   background: transparent;
   border: 1px solid #c9a84c;

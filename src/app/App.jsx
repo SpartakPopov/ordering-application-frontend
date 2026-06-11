@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import { LoadingScreen } from '../components/ui/LoadingScreen';
 import { ErrorScreen } from '../components/ui/ErrorScreen';
 import { TopNav, CategoryNav, MenuGrid, useMenu } from '../features/menu';
 import { Cart, placeOrder } from '../features/order';
+import { addUnpaidOrder } from '../pages/BillPage';
 
 export default function App() {
   const { menuItems, categories, loading, error } = useMenu();
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState(null);
 
   const [cart, setCart] = useState([]);
@@ -61,17 +64,22 @@ export default function App() {
   }
 
   async function handlePlaceOrder() {
-    setIsSubmitting(true); // disables the place order button and sets it to "Placing"
+    setIsSubmitting(true);
     try {
-      const order = await placeOrder(cart); // calls the fetch function and waits for response
-      setLastOrder(order); // sets the order to be displayed
-      setOrderStatus('success');  // marks as success
-      setCart([]); // clears the cart
+      const order = await placeOrder(cart);
+      setLastOrder(order);
+      setOrderStatus('success');
+      setCart([]);
+      addUnpaidOrder(order); // persist to localStorage so BillPage can show it
     } catch {
-      setOrderStatus('error'); // something went wrong message
+      setOrderStatus('error');
     } finally {
-      setIsSubmitting(false); // button is clickable again
+      setIsSubmitting(false);
     }
+  }
+
+  function handlePayNow() {
+    navigate('/checkout', { state: { totalPrice: lastOrder.totalPrice, orderId: lastOrder.id } });
   }
 
   function dismissOrderStatus() {
@@ -106,6 +114,7 @@ export default function App() {
           orderStatus={orderStatus}
           lastOrder={lastOrder}
           onDismiss={dismissOrderStatus}
+          onPayNow={handlePayNow}
         />
       </div>
       <footer className="site-footer">

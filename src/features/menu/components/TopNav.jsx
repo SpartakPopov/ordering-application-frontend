@@ -1,3 +1,6 @@
+import { useState, useEffect } from 'react';
+import { getUnpaidOrders } from '../../../pages/BillPage';
+
 const UserIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
     <circle cx="12" cy="8" r="4" />
@@ -5,15 +8,32 @@ const UserIcon = () => (
   </svg>
 );
 
-const CartIcon = () => (
+const BillIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-    <line x1="3" y1="6" x2="21" y2="6" />
-    <path d="M16 10a4 4 0 01-8 0" />
+    <rect x="5" y="2" width="14" height="20" rx="2" />
+    <line x1="9" y1="7" x2="15" y2="7" />
+    <line x1="9" y1="11" x2="15" y2="11" />
+    <line x1="9" y1="15" x2="13" y2="15" />
   </svg>
 );
 
 export function TopNav() {
+  const [unpaidCount, setUnpaidCount] = useState(getUnpaidOrders().length);
+
+  useEffect(() => {
+    function onStorageChange() {
+      setUnpaidCount(getUnpaidOrders().length);
+    }
+    // fires when any tab changes localStorage
+    window.addEventListener('storage', onStorageChange);
+    // fires when this tab changes it (via addUnpaidOrder / clearUnpaidOrders)
+    window.addEventListener('unpaid-orders-changed', onStorageChange);
+    return () => {
+      window.removeEventListener('storage', onStorageChange);
+      window.removeEventListener('unpaid-orders-changed', onStorageChange);
+    };
+  }, []);
+
   return (
     <header className="top-nav">
       <div className="top-nav-left" />
@@ -23,7 +43,12 @@ export function TopNav() {
       </div>
       <div className="top-nav-icons">
         <a href="/admin" className="icon-btn" aria-label="Account"><UserIcon /></a>
-        <button className="icon-btn" aria-label="Cart"><CartIcon /></button>
+        <a href="/bill" className="icon-btn icon-btn--badge" aria-label="Bill">
+          <BillIcon />
+          {unpaidCount > 0 && (
+            <span className="nav-badge">{unpaidCount}</span>
+          )}
+        </a>
       </div>
     </header>
   );
