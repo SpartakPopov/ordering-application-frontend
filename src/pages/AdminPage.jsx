@@ -6,18 +6,22 @@ import './AdminPage.css';
 const CLOUD_NAME    = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
+const EMPTY_FORM = { name: '', price: '', categoryId: '', imageUrl: '' };
+
 export default function AdminPage() {
   const { authHeader, logout } = useAuth();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [menuItems,  setMenuItems]  = useState([]);
-  const [form, setForm] = useState({ name: '', price: '', categoryId: '', imageUrl: '' });
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [editingId,    setEditingId]    = useState(null); // non-null means edit mode
   const [imageFile,    setImageFile]    = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [saving,    setSaving]    = useState(false);
-  const [feedback,  setFeedback]  = useState(null); // { type: 'success'|'error', msg }
+  const [feedback,  setFeedback]  = useState(null);
   const fileInputRef = useRef(null);
+  const formRef      = useRef(null);
 
   useEffect(() => {
     Promise.all([
@@ -38,24 +42,47 @@ export default function AdminPage() {
   function handleFileChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    setImageFile(file); // store the file
-    setImagePreview(URL.createObjectURL(file)); // local blob URL for the preview thumbnail
-    setForm((f) => ({ ...f, imageUrl: '' })); // clear any previously typed URL
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setForm((f) => ({ ...f, imageUrl: '' }));
+  }
+
+  function handleEdit(item) {
+    setEditingId(item.id);
+    setForm({
+      name:       item.name,
+      price:      String(item.price),
+      categoryId: String(item.categoryId),
+      imageUrl:   item.imageUrl ?? '',
+    });
+    setImageFile(null);
+    setImagePreview(item.imageUrl ?? null);
+    setFeedback(null);
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function handleCancelEdit() {
+    setEditingId(null);
+    setForm({ ...EMPTY_FORM, categoryId: categories[0] ? String(categories[0].id) : '' });
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setFeedback(null);
   }
 
   async function uploadToCloudinary() {
-    if (!imageFile) return form.imageUrl || null; //no file selected, return any existing URL or null
+    if (!imageFile) return form.imageUrl || null;
 
     if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      setFeedback({ type: 'error', msg: 'Cloudinary is not configured. Add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to your .env file.' });
+      setFeedback({ type: 'error', msg: 'Cloudinary is not configured.' });
       return null;
     }
 
     setUploading(true);
     try {
       const data = new FormData();
-      data.append('file', imageFile); // the raw image bytes
-      data.append('upload_preset', UPLOAD_PRESET); // tells Cloudinary which preset rules to apply
+      data.append('file', imageFile);
+      data.append('upload_preset', UPLOAD_PRESET);
 
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
@@ -63,8 +90,7 @@ export default function AdminPage() {
       );
 
       if (!res.ok) throw new Error('Cloudinary upload failed');
-      const json = await res.json();
-      return json.secure_url;
+      return (await res.json()).secure_url;
     } catch (err) {
       setFeedback({ type: 'error', msg: `Image upload failed: ${err.message}` });
       return null;
@@ -83,30 +109,49 @@ export default function AdminPage() {
     }
 
     const imageUrl = await uploadToCloudinary();
-    if (imageFile && !imageUrl) return; // upload failed, error already set
+    if (imageFile && !imageUrl) return;
 
     setSaving(true);
     try {
-      const res = await fetch('/api/menu', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeader() },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          price: parseFloat(form.price),
-          categoryId: parseInt(form.categoryId),
-          imageUrl: imageUrl || null,   // the Cloudinary URL
-        }),
-      });
-
-      if (!res.ok) throw new Error('Failed to save item');
-      const created = await res.json();
-
-      setMenuItems((prev) => [...prev, created]);
-      setForm((f) => ({ ...f, name: '', price: '', imageUrl: '' }));
-      setImageFile(null);
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      setFeedback({ type: 'success', msg: `"${created.name}" added to the menu.` });
+      if (editingId !== null) {
+        // ── PATCH existing item ──
+        const res = await fetch(`/api/menu/${editingId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...authHeader() },
+          body: JSON.stringify({
+            id:         editingId,
+            name:       form.name.trim(),
+            price:      parseFloat(form.price),
+            categoryId: parseInt(form.categoryId),
+            imageUrl:   imageUrl || null,
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to update item');
+        const updated = await res.json();
+        setMenuItems((prev) => prev.map((i) => (i.id === editingId ? updated : i)));
+        setFeedback({ type: 'success', msg: `"${updated.name}" updated.` });
+        handleCancelEdit();
+      } else {
+        // ── POST new item ──
+        const res = await fetch('/api/menu', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader() },
+          body: JSON.stringify({
+            name:       form.name.trim(),
+            price:      parseFloat(form.price),
+            categoryId: parseInt(form.categoryId),
+            imageUrl:   imageUrl || null,
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to save item');
+        const created = await res.json();
+        setMenuItems((prev) => [...prev, created]);
+        setForm((f) => ({ ...f, name: '', price: '', imageUrl: '' }));
+        setImageFile(null);
+        setImagePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        setFeedback({ type: 'success', msg: `"${created.name}" added to the menu.` });
+      }
     } catch (err) {
       setFeedback({ type: 'error', msg: err.message });
     } finally {
@@ -120,6 +165,7 @@ export default function AdminPage() {
       const res = await fetch(`/api/menu/${id}`, { method: 'DELETE', headers: authHeader() });
       if (!res.ok) throw new Error('Delete failed');
       setMenuItems((prev) => prev.filter((i) => i.id !== id));
+      if (editingId === id) handleCancelEdit();
       setFeedback({ type: 'success', msg: `"${name}" removed.` });
     } catch (err) {
       setFeedback({ type: 'error', msg: err.message });
@@ -137,11 +183,10 @@ export default function AdminPage() {
           <span className="admin-brand-name">Le Château</span>
           <span className="admin-brand-sub">Manager Panel</span>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div className="admin-header-right">
           <a href="/" className="admin-back">← Back to menu</a>
           <button
-            className="admin-back"
-            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            className="admin-logout-btn"
             onClick={() => { logout(); navigate('/login'); }}
           >
             Log out
@@ -150,9 +195,11 @@ export default function AdminPage() {
       </header>
 
       <div className="admin-body">
-        {/* ── Add item form ── */}
-        <section className="admin-section">
-          <h2 className="admin-section-title">Add Menu Item</h2>
+        {/* ── Add / Edit form ── */}
+        <section className="admin-section" ref={formRef}>
+          <h2 className="admin-section-title">
+            {editingId !== null ? 'Edit Menu Item' : 'Add Menu Item'}
+          </h2>
 
           {feedback && (
             <div className={`admin-feedback admin-feedback--${feedback.type}`}>
@@ -215,6 +262,7 @@ export default function AdminPage() {
                       onClick={() => {
                         setImageFile(null);
                         setImagePreview(null);
+                        setForm((f) => ({ ...f, imageUrl: '' }));
                         if (fileInputRef.current) fileInputRef.current.value = '';
                       }}
                     >
@@ -238,13 +286,24 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="admin-submit-btn"
-              disabled={uploading || saving}
-            >
-              {uploading ? 'Uploading image…' : saving ? 'Saving…' : 'Add to Menu'}
-            </button>
+            <div className="form-actions">
+              <button
+                type="submit"
+                className="admin-submit-btn"
+                disabled={uploading || saving}
+              >
+                {uploading ? 'Uploading image…' : saving ? 'Saving…' : editingId !== null ? 'Save Changes' : 'Add to Menu'}
+              </button>
+              {editingId !== null && (
+                <button
+                  type="button"
+                  className="admin-cancel-btn"
+                  onClick={handleCancelEdit}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </section>
 
@@ -267,7 +326,7 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {menuItems.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item.id} className={editingId === item.id ? 'row--editing' : ''}>
                     <td>
                       {item.imageUrl
                         ? <img src={item.imageUrl} alt={item.name} className="table-thumb" />
@@ -277,7 +336,13 @@ export default function AdminPage() {
                     <td className="table-name">{item.name}</td>
                     <td className="table-category">{categoryName(item.categoryId)}</td>
                     <td className="table-price">€{item.price?.toFixed(2)}</td>
-                    <td>
+                    <td className="table-actions">
+                      <button
+                        className="edit-btn"
+                        onClick={() => handleEdit(item)}
+                      >
+                        Edit
+                      </button>
                       <button
                         className="delete-btn"
                         onClick={() => handleDelete(item.id, item.name)}

@@ -11,17 +11,21 @@ function parseRole(token) {
 }
 
 export function AuthProvider({ children }) {
-  // Token lives only in memory — never written to localStorage or cookies
-  // Safe from XSS: injected scripts cannot read React state
-  const [token, setToken] = useState(null);
-  const [role,  setRole]  = useState(null);
+  // sessionStorage survives page refresh but clears when the tab is closed
+  const [token, setToken] = useState(() => sessionStorage.getItem('auth_token'));
+  const [role,  setRole]  = useState(() => {
+    const t = sessionStorage.getItem('auth_token');
+    return t ? parseRole(t) : null;
+  });
 
   function login(newToken) {
+    sessionStorage.setItem('auth_token', newToken);
     setToken(newToken);
     setRole(parseRole(newToken));
   }
 
   function logout() {
+    sessionStorage.removeItem('auth_token');
     setToken(null);
     setRole(null);
   }

@@ -14,7 +14,6 @@ export function getUnpaidOrders() {
 
 export function addUnpaidOrder(order) {
   const existing = getUnpaidOrders();
-  // avoid duplicates
   if (existing.find((o) => o.id === order.id)) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify([...existing, { id: order.id, totalPrice: order.totalPrice }]));
   window.dispatchEvent(new Event('unpaid-orders-changed'));
@@ -32,8 +31,8 @@ export function removeUnpaidOrder(orderId) {
 }
 
 export default function BillPage() {
-  const navigate  = useNavigate();
-  const [orders, setOrders] = useState([]);
+  const navigate = useNavigate();
+  const [orders,  setOrders]  = useState([]);
   const [loading, setLoading] = useState(true);
 
   function loadOrders() {
@@ -44,7 +43,6 @@ export default function BillPage() {
       return;
     }
 
-    // Fetch full order details from the backend for each stored ID
     Promise.all(
       stored.map((o) =>
         fetch(`/api/orders/${o.id}`)
@@ -62,12 +60,9 @@ export default function BillPage() {
   }, []);
 
   function handleResetTable() {
+    if (!window.confirm('Clear all unpaid orders from this table? This cannot be undone.')) return;
     clearUnpaidOrders();
     setOrders([]);
-  }
-
-  function handlePayOrder(order) {
-    navigate('/checkout', { state: { totalPrice: order.totalPrice, orderId: order.id } });
   }
 
   function handlePayAll() {
@@ -106,9 +101,6 @@ export default function BillPage() {
                       </li>
                     ))}
                   </ul>
-                  <button className="bill-pay-btn" onClick={() => handlePayOrder(order)}>
-                    Pay this order
-                  </button>
                 </div>
               ))}
             </div>
@@ -119,7 +111,7 @@ export default function BillPage() {
                 <span>€{grandTotal.toFixed(2)}</span>
               </div>
               <button className="bill-pay-all-btn" onClick={handlePayAll}>
-                Pay all — €{grandTotal.toFixed(2)}
+                Pay — €{grandTotal.toFixed(2)}
               </button>
               <button className="bill-reset-btn" onClick={handleResetTable}>
                 Reset table

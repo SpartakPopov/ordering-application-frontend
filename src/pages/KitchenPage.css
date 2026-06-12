@@ -23,6 +23,7 @@
 
 /* ── Header ── */
 .kitchen-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,6 +36,9 @@
   display: flex;
   align-items: baseline;
   gap: 16px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .kitchen-brand-name {
@@ -74,6 +78,78 @@
 .connection-status--live .connection-dot {
   background: #4caf7d;
   animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Clock (top-left) ── */
+.kitchen-header-left {
+  flex: 1;
+}
+
+.kitchen-clock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kitchen-clock-time {
+  font-family: 'Jost', sans-serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: #ccc;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.kitchen-clock-date {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #444;
+}
+
+.kitchen-header-right {
+  flex: 1;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.kitchen-logout-btn {
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.kitchen-logout-btn:hover {
+  color: #aaa;
+}
+
+.kitchen-error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #3a1212;
+  border-bottom: 1px solid #5a1a1a;
+  color: #f08080;
+  font-size: 13px;
+  padding: 10px 32px;
+  flex-shrink: 0;
+}
+
+.kitchen-error-dismiss {
+  background: none;
+  border: none;
+  color: #f08080;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 1;
 }
 
 /* ── Board ── */
@@ -158,9 +234,16 @@
 
 .ticket-body {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ticket-main {
+  display: flex;
   align-items: baseline;
   gap: 10px;
-  min-width: 0;
 }
 
 .ticket-name {
@@ -176,6 +259,28 @@
   font-size: 20px;
   color: #777;
   flex-shrink: 0;
+}
+
+.ticket-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ticket-order-id {
+  font-size: 11px;
+  color: #444;
+  letter-spacing: 1px;
+}
+
+.ticket-elapsed {
+  font-size: 11px;
+  color: #666;
+  letter-spacing: 0.5px;
+}
+
+.ticket-elapsed--urgent {
+  color: #e07b3a;
 }
 
 .ticket-action {

@@ -86,3 +86,17 @@
   color: #c9a04a;
   font-family: 'Courier New', monospace;
 }
+
+.checkout-card--centered {
+  text-align: center;
+}
+
+.checkout-complete-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.checkout-complete-note {
+  color: #888;
+  margin-bottom: 2rem;
+}

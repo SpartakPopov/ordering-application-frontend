@@ -5,11 +5,51 @@ import SockJS from 'sockjs-client';
 import { useAuth } from '../context/AuthContext';
 import './KitchenPage.css';
 
+// ── Live clock shown in the header ──────────────────────────────────────────
+function Clock() {
+  const [time, setTime] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="kitchen-clock">
+      <span className="kitchen-clock-time">
+        {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      </span>
+      <span className="kitchen-clock-date">
+        {time.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })}
+      </span>
+    </div>
+  );
+}
+
+// ── Elapsed time badge — re-renders every minute ─────────────────────────────
+function ElapsedBadge({ orderedAt }) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 60_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const mins = Math.floor((Date.now() - orderedAt) / 60_000);
+  const urgent = mins >= 10;
+  return (
+    <span className={`ticket-elapsed${urgent ? ' ticket-elapsed--urgent' : ''}`}>
+      {mins === 0 ? 'just now' : `${mins} min ago`}
+    </span>
+  );
+}
+
 export default function KitchenPage() {
   const { authHeader, logout } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [connected, setConnected] = useState(false);
+  const [actionError, setActionError] = useState(null);
+
+  // Tracks when each order was first seen on this client (orderId → timestamp ms)
+  const orderTimesRef = useRef(new Map());
 
   const setOrdersRef = useRef(setOrders);
   setOrdersRef.current = setOrders;
@@ -29,9 +69,10 @@ export default function KitchenPage() {
   }
 
   function handleKitchenMessage(data) {
-    switch (data.type) {  // checking the type of message received
+    switch (data.type) {
       case 'NEW_ORDER':
-        setOrdersRef.current((prev) => [...prev, data.payload]); // adds new order to the bottom of the list
+        orderTimesRef.current.set(data.payload.id, Date.now());
+        setOrdersRef.current((prev) => [...prev, data.payload]);
         break;
 
       case 'ITEM_IN_PROGRESS':
@@ -44,7 +85,7 @@ export default function KitchenPage() {
 
       case 'ORDER_COMPLETED':
         setOrdersRef.current((prev) =>
-          prev.filter((o) => o.id !== data.payload.orderId) // remove completed orders from the list
+          prev.filter((o) => o.id !== data.payload.orderId)
         );
         break;
     }
@@ -53,60 +94,70 @@ export default function KitchenPage() {
   useEffect(() => {
     fetch('/api/orders')
       .then((r) => r.json())
-      .then((data) =>
-        setOrders(
-          data
-            .filter((o) => o.status !== 'COMPLETED')
-            .sort((a, b) => a.id - b.id)
-        )
-      )
+      .then((data) => {
+        const active = data
+          .filter((o) => o.status !== 'COMPLETED')
+          .sort((a, b) => a.id - b.id);
+        // Record arrival time for pre-existing orders
+        const now = Date.now();
+        active.forEach((o) => {
+          if (!orderTimesRef.current.has(o.id)) {
+            orderTimesRef.current.set(o.id, now);
+          }
+        });
+        setOrders(active);
+      })
       .catch(console.error);
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('/ws'), // Tells STOMP to use SockJS instead of raw WebSocket
-      onDisconnect: () => setConnected(false),  // disables the "live" status dot in the UI
+      webSocketFactory: () => new SockJS('/ws'),
+      onDisconnect: () => setConnected(false),
     });
 
     client.onConnect = () => {
-      setConnected(true);  //enables the "live" status dot in the UI
-      client.subscribe('/topic/kitchen', (message) => { // STOMP Subscribes to /topic/kitchen 
-                                                    // and all new orders are broadcasted here
-        handleKitchenMessage(JSON.parse(message.body)); 
+      setConnected(true);
+      client.subscribe('/topic/kitchen', (message) => {
+        handleKitchenMessage(JSON.parse(message.body));
       });
     };
 
-    client.activate();  // Opens SockJS connection -> upgrades to STOMP -> triggers onConnect
-    return () => client.deactivate(); // Cleanup
+    client.activate();
+    return () => client.deactivate();
   }, []);
 
   async function startItem(orderId, itemId) {
     try {
-      await fetch(`/api/orders/${orderId}/items/${itemId}/start`, {
+      const res = await fetch(`/api/orders/${orderId}/items/${itemId}/start`, {
         method: 'PATCH',
         headers: authHeader(),
       });
-    } catch (err) {
-      console.error('Failed to start item', err);
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+    } catch {
+      setActionError('Failed to start item — please try again.');
     }
   }
 
   async function markItemDone(orderId, itemId) {
     try {
-      await fetch(`/api/orders/${orderId}/items/${itemId}/done`, {
+      const res = await fetch(`/api/orders/${orderId}/items/${itemId}/done`, {
         method: 'PATCH',
         headers: authHeader(),
       });
-    } catch (err) {
-      console.error('Failed to mark item done', err);
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+    } catch {
+      setActionError('Failed to mark item done — please try again.');
     }
   }
 
-  // Each column is driven purely by individual item status
   const newTickets = orders
     .flatMap((o) =>
       o.items
         .filter((item) => !item.status || item.status === 'PENDING')
-        .map((item) => ({ ...item, orderId: o.id }))
+        .map((item) => ({
+          ...item,
+          orderId: o.id,
+          orderedAt: orderTimesRef.current.get(o.id) ?? Date.now(),
+        }))
     )
     .sort((a, b) => a.id - b.id);
 
@@ -114,30 +165,44 @@ export default function KitchenPage() {
     .flatMap((o) =>
       o.items
         .filter((item) => item.status === 'IN_PROGRESS')
-        .map((item) => ({ ...item, orderId: o.id }))
+        .map((item) => ({
+          ...item,
+          orderId: o.id,
+          orderedAt: orderTimesRef.current.get(o.id) ?? Date.now(),
+        }))
     )
     .sort((a, b) => a.id - b.id);
 
   return (
     <div className="kitchen-page">
       <header className="kitchen-header">
+        <div className="kitchen-header-left">
+          <Clock />
+        </div>
         <div className="kitchen-brand">
           <span className="kitchen-brand-name">Le Château</span>
           <span className="kitchen-brand-sub">Kitchen Display</span>
         </div>
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+        <div className="kitchen-header-right">
           <div className={`connection-status ${connected ? 'connection-status--live' : ''}`}>
             <span className="connection-dot" />
             {connected ? 'Live' : 'Disconnected'}
           </div>
           <button
+            className="kitchen-logout-btn"
             onClick={() => { logout(); navigate('/login'); }}
-            style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem' }}
           >
             Log out
           </button>
         </div>
       </header>
+
+      {actionError && (
+        <div className="kitchen-error-banner">
+          {actionError}
+          <button className="kitchen-error-dismiss" onClick={() => setActionError(null)}>✕</button>
+        </div>
+      )}
 
       <div className="kitchen-board">
         {/* ── LEFT: New Orders ── */}
@@ -198,8 +263,14 @@ function ItemTicket({ ticket, onStart, onDone }) {
   return (
     <div className="ticket">
       <div className="ticket-body">
-        <span className="ticket-name">{ticket.menuItemName}</span>
-        <span className="ticket-qty">× {ticket.quantity}</span>
+        <div className="ticket-main">
+          <span className="ticket-name">{ticket.menuItemName}</span>
+          <span className="ticket-qty">× {ticket.quantity}</span>
+        </div>
+        <div className="ticket-meta">
+          <span className="ticket-order-id">#{ticket.orderId}</span>
+          <ElapsedBadge orderedAt={ticket.orderedAt} />
+        </div>
       </div>
       <div className="ticket-action">
         {onStart && (

@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 export function Cart({
   cart,
   onIncrease,
@@ -12,6 +14,13 @@ export function Cart({
 }) {
   const total = cart.reduce((sum, item) => sum + item.menuItemPrice * item.quantity, 0);
   const isEmpty = cart.length === 0;
+
+  // Auto-dismiss success confirmation after 5 seconds
+  useEffect(() => {
+    if (orderStatus !== 'success') return;
+    const t = setTimeout(onDismiss, 5000);
+    return () => clearTimeout(t);
+  }, [orderStatus, onDismiss]);
 
   return (
     <aside className="cart-panel">
@@ -63,11 +72,12 @@ export function Cart({
                   </div>
                   <div className="cart-item-controls">
                     <button
-                      className="qty-btn"
+                      className={`qty-btn${item.quantity === 1 ? ' qty-btn--remove' : ''}`}
                       onClick={() => onDecrease(item.menuItemId)}
-                      aria-label="Decrease quantity"
+                      aria-label={item.quantity === 1 ? 'Remove item' : 'Decrease quantity'}
+                      title={item.quantity === 1 ? 'Removes item from order' : undefined}
                     >
-                      −
+                      {item.quantity === 1 ? '×' : '−'}
                     </button>
                     <span className="qty-value">{item.quantity}</span>
                     <button

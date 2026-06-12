@@ -37,6 +37,12 @@
   color: #555;
 }
 
+.admin-header-right {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 .admin-back {
   font-size: 13px;
   color: #888;
@@ -46,6 +52,19 @@
 }
 
 .admin-back:hover { color: #c9a84c; }
+
+.admin-logout-btn {
+  background: none;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+
+.admin-logout-btn:hover { color: #c9a84c; }
 
 /* ── Body ── */
 .admin-body {
@@ -197,6 +216,13 @@
   color: #e5534b;
 }
 
+/* ── Form actions row ── */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 /* ── Submit button ── */
 .admin-submit-btn {
   padding: 14px;
@@ -223,6 +249,26 @@
 .admin-submit-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── Cancel edit button ── */
+.admin-cancel-btn {
+  padding: 14px 24px;
+  background: transparent;
+  border: 1px solid #333;
+  color: #666;
+  cursor: pointer;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.admin-cancel-btn:hover {
+  border-color: #888;
+  color: #aaa;
 }
 
 /* ── Items table ── */
@@ -271,6 +317,34 @@
 .table-name     { font-size: 15px; color: #ddd; }
 .table-category { font-size: 13px; color: #666; }
 .table-price    { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #c9a84c; }
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.row--editing td {
+  background: #0f0f00;
+}
+
+.edit-btn {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #333;
+  color: #888;
+  cursor: pointer;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.edit-btn:hover {
+  border-color: #c9a84c;
+  color: #c9a84c;
+}
 
 .delete-btn {
   padding: 6px 14px;

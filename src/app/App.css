@@ -512,6 +512,17 @@
   color: #c9a84c;
 }
 
+.qty-btn--remove {
+  border-color: #c4463a;
+  color: #c4463a;
+}
+
+.qty-btn--remove:hover {
+  border-color: #c4463a;
+  color: #fff;
+  background: #c4463a;
+}
+
 .qty-value {
   font-family: 'Jost', sans-serif;
   font-size: 14px;
