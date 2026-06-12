@@ -19,21 +19,47 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          # Caches the npm dependency cache between runs —
+          # avoids re-downloading packages when package-lock.json hasn't changed
           cache: 'npm'
 
       - name: Install dependencies
+        # npm ci installs exactly what is in package-lock.json —
+        # faster and more reproducible than npm install,
+        # which may silently resolve to different versions
         run: npm ci
 
       - name: Run tests
+        # Runs Vitest unit tests — tests component rendering, filtering,
+        # cart behaviour, error states. All API calls are mocked.
+        # Pipeline stops here if any test fails.
         run: npm test
 
       - name: Build
+        # Vite compiles and bundles the React app into /dist
+        # This catches any TypeScript/JSX errors or broken imports
+        # that tests wouldn't catch
         run: npm run build
+
+      - name: SonarCloud Analysis
+        # Scans the source code for bugs, code smells, and security hotspots.
+        # Uses the sonarcloud-github-action which runs sonar-scanner internally.
+        # Results are uploaded to sonarcloud.io and visible on the project dashboard.
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
 
   docker-push:
     name: Build & Push Docker Image (SHA tag)
     runs-on: ubuntu-latest
+    # Only runs after all unit tests and the build pass
     needs: build-and-test
+    # Only on real pushes to main — not on pull requests
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
@@ -51,12 +77,18 @@ jobs:
         with:
           context: .
           push: true
+          # no-cache forces a completely fresh image build every time —
+          # prevents stale npm layers from being reused across pipeline runs
           no-cache: true
+          # Only the SHA tag is pushed here — NOT :latest
+          # :latest is intentionally withheld until E2E tests pass in the next job.
+          # This means the production tag is never updated with an untested build.
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/ordering-frontend:${{ github.sha }}
 
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    # Runs after the SHA-tagged image has been pushed to Docker Hub
     needs: docker-push
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -73,44 +105,66 @@ jobs:
         working-directory: e2e
         run: |
           npm ci
+          # Downloads the Chromium browser binary that Playwright controls —
+          # --with-deps also installs OS-level dependencies needed to run a browser
+          # on the Ubuntu runner (fonts, shared libraries, etc.)
           npx playwright install chromium --with-deps
 
       - name: Pull Docker images
         run: |
+          # Pull the stable backend (latest = last verified build)
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ordering-backend:latest
+          # Pull the exact frontend image built in this pipeline run (by SHA)
+          # This ensures we test the code from this commit, not a previous build
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ordering-frontend:${{ github.sha }}
 
       - name: Start full stack
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           FRONTEND_TAG: ${{ github.sha }}
+          # Runtime secrets are injected here from GitHub secrets —
+          # they are never stored in the repository or the Docker image
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DEFAULT_MANAGER_PASSWORD: ${{ secrets.DEFAULT_MANAGER_PASSWORD }}
           DEFAULT_KITCHEN_PASSWORD: ${{ secrets.DEFAULT_KITCHEN_PASSWORD }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+        # --wait blocks until every service's health check passes:
+        # MySQL → backend (/actuator/health) → frontend (/api/menu)
+        # Playwright won't start until the entire stack is confirmed healthy
         run: docker compose -f docker-compose.e2e.yml up -d --wait
 
       - name: Run Playwright E2E tests
         working-directory: e2e
+        # Runs all specs in e2e/tests/ against http://localhost (the nginx container)
+        # Tests a real browser talking to a real backend and real database —
+        # nothing is mocked. If any test fails, this job fails and promote is skipped.
         run: npx playwright test
 
       - name: Upload test report
+        # if: always() ensures the report is uploaded even when tests fail —
+        # this is essential for debugging, since failures are the exact moment
+        # you most need the report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: e2e/playwright-report/
+          # Report kept for 14 days — enough time to investigate a failure
           retention-days: 14
 
       - name: Tear down stack
+        # if: always() ensures containers are removed even on test failure —
+        # prevents orphaned containers from filling up the runner's disk
         if: always()
         run: docker compose -f docker-compose.e2e.yml down -v
 
   promote:
     name: Promote to Latest
     runs-on: ubuntu-latest
+    # This job only runs if e2e passed — it is the gate that protects :latest
+    # If E2E fails, this job is skipped and :latest remains on the previous good build
     needs: e2e
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -123,7 +177,11 @@ jobs:
 
       - name: Tag SHA image as latest
         run: |
+          # Pull the SHA-tagged image that passed E2E testing
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ordering-frontend:${{ github.sha }}
+          # Re-tag it as :latest — no rebuild, just a new label on the same image layers
           docker tag ${{ secrets.DOCKERHUB_USERNAME }}/ordering-frontend:${{ github.sha }} \
                      ${{ secrets.DOCKERHUB_USERNAME }}/ordering-frontend:latest
+          # Push :latest — this is the only place in the entire pipeline where
+          # :latest is written, and it only happens after every test has passed
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/ordering-frontend:latest
