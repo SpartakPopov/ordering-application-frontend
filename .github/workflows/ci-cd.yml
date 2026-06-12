@@ -29,11 +29,12 @@ jobs:
         # which may silently resolve to different versions
         run: npm ci
 
-      - name: Run tests
-        # Runs Vitest unit tests — tests component rendering, filtering,
-        # cart behaviour, error states. All API calls are mocked.
+      - name: Run tests with coverage
+        # Runs Vitest unit tests and collects coverage via v8.
+        # Generates an lcov report at coverage/lcov.info which SonarCloud reads
+        # to display coverage percentages on the dashboard.
         # Pipeline stops here if any test fails.
-        run: npm test
+        run: npm test -- --coverage
 
       - name: Build
         # Vite compiles and bundles the React app into /dist
@@ -53,6 +54,7 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
   docker-push:
     name: Build & Push Docker Image (SHA tag)

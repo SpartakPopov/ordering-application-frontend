@@ -12,6 +12,11 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/testing/setup.js',
     exclude: ['e2e/**', 'node_modules/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['lcov', 'text'],
+      exclude: ['e2e/**', 'node_modules/**', 'src/testing/**'],
+    },
   },
   server: {
     proxy: {
