@@ -92,7 +92,7 @@ export default function KitchenPage() {
   }
 
   useEffect(() => {
-    fetch('/api/orders')
+    fetch('/api/orders', { headers: authHeader() })
       .then((r) => r.json())
       .then((data) => {
         const active = data

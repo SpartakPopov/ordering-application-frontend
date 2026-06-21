@@ -114,7 +114,7 @@ export default function AdminPage() {
     setSaving(true);
     try {
       if (editingId !== null) {
-        // ── PATCH existing item ──
+        //  PATCH existing item 
         const res = await fetch(`/api/menu/${editingId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', ...authHeader() },
@@ -132,7 +132,7 @@ export default function AdminPage() {
         setFeedback({ type: 'success', msg: `"${updated.name}" updated.` });
         handleCancelEdit();
       } else {
-        // ── POST new item ──
+        // POST new item 
         const res = await fetch('/api/menu', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...authHeader() },
@@ -158,7 +158,7 @@ export default function AdminPage() {
       setSaving(false);
     }
   }
-
+// DELETE an item
   async function handleDelete(id, name) {
     if (!window.confirm(`Remove "${name}" from the menu?`)) return;
     try {

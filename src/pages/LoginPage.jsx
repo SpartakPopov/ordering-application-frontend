@@ -25,7 +25,6 @@ export default function LoginPage() {
       });
 
       if (!res.ok) {
-        // Intentionally vague — don't reveal whether username or password was wrong
         setError('Invalid username or password.');
         return;
       }

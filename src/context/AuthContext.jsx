@@ -4,14 +4,14 @@ const AuthContext = createContext(null);
 
 function parseRole(token) {
   try {
-    return JSON.parse(atob(token.split('.')[1])).role ?? null;
+    return JSON.parse(atob(token.split('.')[1])).role ?? null; // a JWT token has 3 parts seperated by dots
+    // token.split grabs only the middle part, then atob decodes it and reads the role
   } catch {
     return null;
   }
 }
 
 export function AuthProvider({ children }) {
-  // sessionStorage survives page refresh but clears when the tab is closed
   const [token, setToken] = useState(() => sessionStorage.getItem('auth_token'));
   const [role,  setRole]  = useState(() => {
     const t = sessionStorage.getItem('auth_token');
@@ -30,12 +30,11 @@ export function AuthProvider({ children }) {
     setRole(null);
   }
 
-  // Convenience: build the Authorization header for protected API calls
   function authHeader() {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
-  return (
+  return (  
     <AuthContext.Provider value={{ token, role, login, logout, authHeader }}>
       {children}
     </AuthContext.Provider>
