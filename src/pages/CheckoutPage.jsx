@@ -57,7 +57,7 @@ function CheckoutForm({ totalPrice }) {
         className="pay-btn"
         disabled={!stripe || isLoading}
       >
-        {isLoading ? 'Processing…' : `Pay €${totalPrice?.toFixed(2)}`}
+        {isLoading ? 'Processing…' : `Pay EUR${totalPrice?.toFixed(2)}`}
       </button>
       {message && <p className="checkout-error">{message}</p>}
     </form>
@@ -121,7 +121,7 @@ export default function CheckoutPage() {
       <div className="checkout-card">
         <h1 className="checkout-title">Complete Payment</h1>
         {orderId && <p className="checkout-order-id">Order #{orderId}</p>}
-        <p className="checkout-total">Total: €{totalPrice?.toFixed(2)}</p>
+        <p className="checkout-total">Total: EUR{totalPrice?.toFixed(2)}</p>
 
         <Elements stripe={stripe} options={{ clientSecret }}>
           <CheckoutForm totalPrice={totalPrice} />

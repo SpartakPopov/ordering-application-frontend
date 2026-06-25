@@ -27,7 +27,7 @@ describe('CheckoutCompletePage', () => {
 
   it('shows the amount paid', () => {
     renderComplete({ totalPrice: 12.50 });
-    expect(screen.getByText('€12.50 paid')).toBeInTheDocument();
+    expect(screen.getByText('EUR12.50 paid')).toBeInTheDocument();
   });
 
   it('clears unpaid orders when totalPrice is present', async () => {

@@ -16,7 +16,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+    
+// POST to backend
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',

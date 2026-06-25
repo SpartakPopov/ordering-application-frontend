@@ -37,7 +37,7 @@ describe('MenuCard', () => {
 
   it('renders formatted price', () => {
     renderCard();
-    expect(screen.getByText('€4.50')).toBeInTheDocument();
+    expect(screen.getByText('EUR4.50')).toBeInTheDocument();
   });
 
   it('renders category badge', () => {

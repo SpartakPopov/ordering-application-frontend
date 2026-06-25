@@ -91,13 +91,13 @@ export default function BillPage() {
                 <div key={order.id} className="bill-order">
                   <div className="bill-order-header">
                     <span className="bill-order-id">Order #{order.id}</span>
-                    <span className="bill-order-total">€{order.totalPrice?.toFixed(2)}</span>
+                    <span className="bill-order-total">EUR{order.totalPrice?.toFixed(2)}</span>
                   </div>
                   <ul className="bill-items">
                     {order.items?.map((item) => (
                       <li key={item.id} className="bill-item">
                         <span>{item.menuItemName}</span>
-                        <span>×{item.quantity} · €{item.subtotal?.toFixed(2)}</span>
+                        <span>×{item.quantity} · EUR{item.subtotal?.toFixed(2)}</span>
                       </li>
                     ))}
                   </ul>
@@ -108,10 +108,10 @@ export default function BillPage() {
             <div className="bill-footer">
               <div className="bill-grand-total">
                 <span>Grand total</span>
-                <span>€{grandTotal.toFixed(2)}</span>
+                <span>EUR{grandTotal.toFixed(2)}</span>
               </div>
               <button className="bill-pay-all-btn" onClick={handlePayAll}>
-                Pay — €{grandTotal.toFixed(2)}
+                Pay — EUR{grandTotal.toFixed(2)}
               </button>
               <button className="bill-reset-btn" onClick={handleResetTable}>
                 Reset table

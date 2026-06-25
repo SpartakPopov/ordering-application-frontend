@@ -118,8 +118,8 @@ describe('App', () => {
   it('displays item prices', async () => {
     mockFetch();
     renderApp();
-    await waitFor(() => expect(screen.getByText('€4.00')).toBeInTheDocument());
-    expect(screen.getByText('€3.00')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('EUR4.00')).toBeInTheDocument());
+    expect(screen.getByText('EUR3.00')).toBeInTheDocument();
   });
 
 

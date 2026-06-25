@@ -34,7 +34,7 @@ describe('Cart', () => {
   it('shows correct total price', () => {
     renderCart();
     // 8.99 * 2 + 2.50 * 1 = 20.48
-    expect(screen.getByText('€20.48')).toBeInTheDocument();
+    expect(screen.getByText('EUR20.48')).toBeInTheDocument();
   });
 
   it('shows empty message when cart is empty', () => {

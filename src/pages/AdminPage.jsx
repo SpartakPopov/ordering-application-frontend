@@ -38,13 +38,13 @@ export default function AdminPage() {
   function handleField(e) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   }
-
+// 1
   function handleFileChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-    setForm((f) => ({ ...f, imageUrl: '' }));
+    setImageFile(file); // store the file
+    setImagePreview(URL.createObjectURL(file)); // local blob URL for preview thumbnail
+    setForm((f) => ({ ...f, imageUrl: '' }));  // clear any previous url
   }
 
   function handleEdit(item) {
@@ -69,9 +69,9 @@ export default function AdminPage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
     setFeedback(null);
   }
-
+// 2
   async function uploadToCloudinary() {
-    if (!imageFile) return form.imageUrl || null;
+    if (!imageFile) return form.imageUrl || null; // no file selected return existing url or null
 
     if (!CLOUD_NAME || !UPLOAD_PRESET) {
       setFeedback({ type: 'error', msg: 'Cloudinary is not configured.' });
@@ -81,8 +81,8 @@ export default function AdminPage() {
     setUploading(true);
     try {
       const data = new FormData();
-      data.append('file', imageFile);
-      data.append('upload_preset', UPLOAD_PRESET);
+      data.append('file', imageFile); // raw image bytes
+      data.append('upload_preset', UPLOAD_PRESET); // tells cloudinary which preset rules to apply
 
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
@@ -103,13 +103,13 @@ export default function AdminPage() {
     e.preventDefault();
     setFeedback(null);
 
-    if (!form.name.trim() || !form.price || !form.categoryId) {
+    if (!form.name.trim() || !form.price || parseFloat(form.price) <= 0 || !form.categoryId) {
       setFeedback({ type: 'error', msg: 'Name, price and category are required.' });
       return;
     }
-
+// 3
     const imageUrl = await uploadToCloudinary();
-    if (imageFile && !imageUrl) return;
+    if (imageFile && !imageUrl) return; // upload failed
 
     setSaving(true);
     try {
@@ -221,7 +221,7 @@ export default function AdminPage() {
             </div>
 
             <div className="form-row">
-              <label className="form-label">Price (€)</label>
+              <label className="form-label">Price (EUR)</label>
               <input
                 className="form-input"
                 name="price"
@@ -335,7 +335,7 @@ export default function AdminPage() {
                     </td>
                     <td className="table-name">{item.name}</td>
                     <td className="table-category">{categoryName(item.categoryId)}</td>
-                    <td className="table-price">€{item.price?.toFixed(2)}</td>
+                    <td className="table-price">EUR{item.price?.toFixed(2)}</td>
                     <td className="table-actions">
                       <button
                         className="edit-btn"

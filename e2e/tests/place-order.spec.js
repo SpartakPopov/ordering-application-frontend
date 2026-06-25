@@ -32,7 +32,7 @@ test.describe('Customer order flow', () => {
     // The cart swaps to a confirmation view showing "Order placed"
     await expect(page.locator('.confirm-title')).toHaveText('Order placed', { timeout: 10_000 });
 
-    // Assert an order ID was returned (format: #123 · €X.XX)
+    // Assert an order ID was returned (format: #123 · EURX.XX)
     await expect(page.locator('.confirm-detail')).toContainText('#');
 
     // Assert the pay-now and new-order buttons are present

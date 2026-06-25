@@ -112,9 +112,9 @@ describe('BillPage', () => {
     renderBill();
 
     await waitFor(() => {
-      // €8.99 appears in the order row, grand total, and Pay button — check the grand total div
+      // EUR8.99 appears in the order row, grand total, and Pay button — check the grand total div
       const grandTotalEl = document.querySelector('.bill-grand-total');
-      expect(within(grandTotalEl).getByText('€8.99')).toBeInTheDocument();
+      expect(within(grandTotalEl).getByText('EUR8.99')).toBeInTheDocument();
     });
   });
 

@@ -5,7 +5,7 @@ export function MenuCard({ item, categoryName, index, onAdd, cartQuantity }) {
       style={{ animationDelay: `${index * 60}ms` }}
     >
       <div className="card-image">
-        {item.imageUrl
+        {item.imageUrl // 4
           ? <img src={item.imageUrl} alt={item.name} /> // browser fetches from Cloudinary CDN
           : <div className="card-image-placeholder" /> // grey box if no image was uploaded
         }

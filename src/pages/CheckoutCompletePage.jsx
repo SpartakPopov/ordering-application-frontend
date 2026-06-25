@@ -21,7 +21,7 @@ export default function CheckoutCompletePage() {
         <div className="checkout-complete-icon">✓</div>
         <h1 className="checkout-title">Payment Successful</h1>
         {totalPrice && (
-          <p className="checkout-total">€{totalPrice.toFixed(2)} paid</p>
+          <p className="checkout-total">EUR{totalPrice.toFixed(2)} paid</p>
         )}
         <p className="checkout-complete-note">
           Your order is being prepared in the kitchen.
